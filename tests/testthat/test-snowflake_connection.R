@@ -1,21 +1,20 @@
 ## A Snowflake database is required for these tests.
 ## You can get a free trial at https://signup.snowflake.com/
 
-snowflake_key_set <-
+snowflake_is_working <-
   tryCatch({
-    keyring::key_get("SnowflakeTrialPassword") != ""
+    con <-
+      DBI::dbConnect(
+        odbc::odbc(),
+        dsn = "Snowflake_Trial",
+        pwd = keyring::key_get("SnowflakeTrialPassword")
+      )
+    TRUE
   }, error = function(error){
     FALSE
   })
 
-if (snowflake_key_set ){
-
-  con <-
-    DBI::dbConnect(
-      odbc::odbc(),
-      dsn = "Snowflake_Trial",
-      pwd = keyring::key_get("SnowflakeTrialPassword")
-    )
+if (snowflake_is_working){
 
   test_that(
     "get_schemas retrieves schemas correctly",
@@ -205,6 +204,55 @@ if (snowflake_key_set ){
       DBI::dbSendQuery(con, "DROP SCHEMA EXAMPLE") |>
         DBI::dbClearResult()
 
+    }
+  )
+
+  test_that(
+    "a join query returns the correct number of rows",
+    {
+      table_1 <-
+        data.frame(
+          x = c(1, 2, 3),
+          y = c("A", "B", "C")
+        )
+
+      table_2 <-
+        data.frame(
+          z = c(4, 5, 6),
+          y = c("A", "B", "C")
+        )
+
+      DBI::dbWriteTable(
+        con,
+        name = DBI::Id(
+          schema = "PUBLIC",
+          table = "TABLE_1"
+        ),
+        value = table_1,
+        overwrite = TRUE,
+        row.names = TRUE
+      )
+
+      DBI::dbWriteTable(
+        con,
+        name = DBI::Id(
+          schema = "PUBLIC",
+          table = "TABLE_2"
+        ),
+        value = table_2,
+        overwrite = TRUE,
+        row.names = TRUE
+      )
+
+      expect_equal(
+        get_n_rows_snowflake(
+          con = con,
+          schema = "",
+          table = "",
+          query = "SELECT * FROM TABLE_1 INNER JOIN TABLE_2 USING(\"y\")"
+        ) |> as.numeric(),
+        3
+      )
     }
   )
 

@@ -1,11 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# octopus
+# octopus <a href="https://mcodrescu.github.io/octopus/"><img src="https://raw.githubusercontent.com/MCodrescu/octopus/main/images/octopuslogosmall.png" align="right" height="138" /></a>
 
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/MCodrescu/octopus/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MCodrescu/octopus/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/octopus)](https://CRAN.R-project.org/package=octopus)
 
 <!-- badges: end -->
 <!-- change -->
@@ -21,23 +23,18 @@ application allowing you to interact with the database.
 *Try it out here!
 [shinyapps.io](https://zszxyy-marcus-codrescu.shinyapps.io/octopusconceptapp/)*
 
-![octopus Interface](images/octopusMainPage3.png)
+![](https://raw.githubusercontent.com/MCodrescu/octopus/da65cdba6ce2362c7b8c21cd2cf309a3cfcbb17b/images/octopusMainPage3.png)
 
 ## Supported Databases
 
 The *octopus* package currently supports the following databases:
 
-- Postgres
-
-- MySQL
-
-- SQLite
-
-- DuckDB
-
-- Snowflake
-
-- Vertica DB
+``` r
+octopus::list_drivers()
+#> [1] "PqConnection"         "Snowflake"            "Vertica Database"    
+#> [4] "duckdb_connection"    "MySQLConnection"      "SQLiteConnection"    
+#> [7] "Microsoft SQL Server"
+```
 
 ## Installation
 

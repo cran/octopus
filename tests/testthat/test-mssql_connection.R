@@ -1,34 +1,30 @@
-### Docker is required to run these tests.
-### Read more about docker at https://hub.docker.com/_/postgres
+### Read more about docker at https://hub.docker.com/_/microsoft-mssql-server
 
 docker_working <-
   tryCatch({
     container_sha <-
       system(
-        "docker run -d -p 5433:5433 -e APP_DB_USER=newdbadmin -e APP_DB_PASSWORD=vertica vertica/vertica-ce",
+        "docker run -e ACCEPT_EULA=Y -e \"SA_PASSWORD=msyq74982!\" -p 1433:1433 --name sql1 -h sql1 -d mcr.microsoft.com/mssql/server:2019-latest",
         intern = TRUE
       )
+
+    Sys.sleep(60)
+
+    # MS SQL Server ODBC Driver https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?view=sql-server-ver16
+    # Set up using ODBC Driver with Server = 127.0.0.1, 1433
+    con <- DBI::dbConnect(
+      odbc::odbc(),
+      uid = "sa",
+      pwd = "msyq74982!",
+      dsn = "mssql_test"
+    )
+
     TRUE
   }, error = \(x){
     FALSE
   })
 
-odbc_dsn_setup <-
-  tryCatch({
-    "Vertica_Test" %in% odbc::odbcListDataSources()$name
-  }, error = function(error){
-    FALSE
-  })
-
-if(docker_working & odbc_dsn_setup){
-
-  Sys.sleep(120)
-
-  con <- DBI::dbConnect(
-    odbc::odbc(),
-    dsn = "Vertica_Test",
-    pwd = "vertica"
-  )
+if(docker_working){
 
   #-------------------------------------------------------------------------------
 
@@ -37,8 +33,10 @@ if(docker_working & odbc_dsn_setup){
     {
 
       expect_equal(
-        get_schemas_vertica(con),
-        c("online_sales", "public", "store", "v_catalog", "v_func", "v_internal", "v_monitor", "v_txtindex")
+        get_schemas_mssql(con),
+        c("dbo", "guest", "INFORMATION_SCHEMA", "sys", "db_owner", "db_accessadmin",
+          "db_securityadmin", "db_ddladmin", "db_backupoperator", "db_datareader",
+          "db_datawriter", "db_denydatareader", "db_denydatawriter")
       )
 
     }
@@ -48,27 +46,20 @@ if(docker_working & odbc_dsn_setup){
     "get_tables retrieve tables correctly",
     {
 
-      mtcars_2 <- mtcars
+      res <- DBI::dbSendQuery(con, "CREATE DATABASE example")
+      DBI::dbClearResult(res)
 
-      mtcars_2["order"] <- seq_len(
-        nrow(mtcars)
-      )
-
-      DBI::dbWriteTable(
+      result <- write_table_mssql(
         con,
-        name = DBI::Id(
-          schema = "public",
-          table = "mtcars"
-        ),
-        value = mtcars_2,
-        overwrite = TRUE,
-        row.names = FALSE
+        schema = "example",
+        table_name = "mtcars",
+        data = mtcars
       )
 
       expect_true(
-        "mtcars" %in% get_tables_vertica(
+        "mtcars" %in% get_tables_mssql(
           con,
-          schema = "public"
+          schema = "example"
         )
       )
 
@@ -79,9 +70,9 @@ if(docker_working & odbc_dsn_setup){
     "get_n_rows retrieves the correct number of rows of a table",
     {
       expect_equal(
-        get_n_rows_vertica(
+        get_n_rows_mssql(
           con,
-          schema = "public",
+          schema = "example",
           table = "mtcars"
         ) |> as.numeric(),
         nrow(mtcars) |> as.numeric()
@@ -89,20 +80,7 @@ if(docker_working & odbc_dsn_setup){
     }
   )
 
-  test_that(
-    "get_n_rows retrieves the correct number of rows of a query",
-    {
-      expect_equal(
-        get_n_rows_vertica(
-          con,
-          schema = "public",
-          table = "mtcars",
-          query = "SELECT * FROM mtcars LIMIT 10"
-        ) |> as.numeric(),
-        10
-      )
-    }
-  )
+
 
   test_that(
     "get_preview returns a view of the dataframe",
@@ -114,30 +92,29 @@ if(docker_working & odbc_dsn_setup){
         NULL
 
       expect_equal(
-        get_preview_vertica(
+        get_preview_mssql(
           con,
-          schema = "public",
+          schema = "example",
           table = "mtcars"
-        ) |>
-          dplyr::arrange(order) |>
-          dplyr::select(-c(order)),
+        ),
         mtcars_wo_rownames
       )
     }
   )
 
+
   test_that(
     "a create table query works correcty",
     {
-      n_rows = get_n_rows_vertica(
+      n_rows = get_n_rows_mssql(
         con = con,
         schema = "",
         table = "",
-        "CREATE TABLE mtcars_2 AS SELECT * FROM mtcars"
+        "SELECT * INTO mtcars_2 FROM mtcars"
       )
 
       submit_query(
-        "CREATE TABLE mtcars_2 AS SELECT * FROM mtcars",
+        "SELECT * INTO mtcars_2 FROM mtcars",
         con = con,
         n_rows = n_rows
       )
@@ -148,24 +125,22 @@ if(docker_working & odbc_dsn_setup){
     }
   )
 
+
   test_that(
     "delete_table correctly drops the table",
     {
-      expect_true(
-        "mtcars" %in% DBI::dbListTables(con)
-      )
 
       expect_equal(
         "Success",
-        delete_table_vertica(
+        delete_table_mssql(
           con,
-          schema = "public",
+          schema = "example",
           table = "mtcars"
         )
       )
 
       expect_false(
-        "mtcars" %in% DBI::dbListTables(con)
+        "mtcars" %in% get_tables_mssql(con, schema = "example")
       )
 
     }
@@ -175,18 +150,18 @@ if(docker_working & odbc_dsn_setup){
     "write_table correctly upload table",
     {
 
-      res <- DBI::dbSendQuery(con, "CREATE SCHEMA example")
+      res <- DBI::dbSendQuery(con, "CREATE DATABASE example_2")
       DBI::dbClearResult(res)
 
-      write_table_vertica(
+      write_table_mssql(
         con,
-        schema = "example",
+        schema = "example_2",
         table_name = "mtcars",
         data = mtcars
       )
 
       expect_true(
-        "mtcars" %in% get_tables_vertica(con, schema = "example")
+        "mtcars" %in% get_tables_mssql(con, schema = "example_2")
       )
 
     }
@@ -207,16 +182,27 @@ if(docker_working & odbc_dsn_setup){
           y = c("A", "B", "C")
         )
 
-      DBI::dbWriteTable(con, "table_1", table_1)
-      DBI::dbWriteTable(con, "table_2", table_2)
+      write_table_mssql(
+        con,
+        schema = "example",
+        table_name = "table_1",
+        data = table_1
+      )
+
+      write_table_mssql(
+        con,
+        schema = "example",
+        table_name = "table_2",
+        data = table_2
+      )
 
       expect_equal(
-        get_n_rows_vertica(
+        get_n_rows_mssql(
           con = con,
-          schema = "",
+          schema = "example",
           table = "",
-          query = "SELECT * FROM table_1 INNER JOIN table_2 USING (y)"
-        ) |> as.numeric(),
+          query = "SELECT x, table_1.y, z FROM table_1 JOIN table_2 ON table_1.y = table_2.y"
+        ),
         3
       )
     }
