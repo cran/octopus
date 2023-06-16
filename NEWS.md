@@ -1,3 +1,8 @@
+# octopus 0.3.0
+* Added helpful loading notifications
+* Added faster row counts for Snowflake
+* Table select remembers selected table after query submitted
+
 # octopus 0.2.0
 
 * Added support for Microsoft SQL Server Database

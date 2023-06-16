@@ -1,7 +1,7 @@
 Package: octopus
 Type: Package
 Title: A Database Management Tool
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: person("Marcus", "Codrescu", , "m.codrescu@outlook.com", role = c("aut", "cre"))
 Maintainer: Marcus Codrescu <m.codrescu@outlook.com>
 Description: A database management tool built as a 'shiny' application. Connect to various 
@@ -19,7 +19,7 @@ Imports: bslib, DBI, dplyr, DT, glue, httr, janitor, rio, shiny,
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-04-11 20:45:05 UTC; mc678p
+Packaged: 2023-06-16 19:37:09 UTC; mc678p
 Author: Marcus Codrescu [aut, cre]
 Repository: CRAN
-Date/Publication: 2023-04-12 16:50:02 UTC
+Date/Publication: 2023-06-16 20:10:02 UTC
