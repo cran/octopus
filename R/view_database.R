@@ -4,6 +4,7 @@
 #'
 #' @param con A database connection object. The result of DBI::dbConnect().
 #' @param options A named list of options to be passed along to shinyApp().
+#' @param max_file_upload_size An integer. The max number of bits allowed in file uploads.
 #'
 #' @importFrom shiny shinyApp
 #' @importFrom shiny showNotification
@@ -49,7 +50,7 @@
 #' @export
 #'
 view_database <-
-  function(con, options = list()){
+  function(con, options = list(), max_file_upload_size = 2000 * 1024^2){
     ui <- shiny::bootstrapPage(
       theme = bslib::bs_theme(
         version = 5
@@ -177,6 +178,8 @@ view_database <-
                   showPrintMargin = FALSE,
                   fontSize = 16,
                   highlightActiveLine = FALSE,
+                  autoComplete = "enabled",
+                  autoCompleters = c("static"),
                   hotkeys = list(
                     run_key = list(
                       win = "Ctrl-Shift-Enter",
@@ -239,6 +242,7 @@ view_database <-
           server = TRUE
         )
 
+
         # Update table select on schema change
         shinyjs::onevent("change", "schema", {
           shiny::showNotification(
@@ -260,6 +264,39 @@ view_database <-
             "loading-notification"
           )
         })
+
+        # Update column name suggestions
+        shinyjs::onevent("change", "tables",{
+
+          if (input$tables %in% current_tables){
+
+            # Set Ace Editors Auto Complete Suggestions
+            current_schema <- input$schema
+            current_table <- input$tables
+            current_table_preview <- tryCatch({
+               get_preview(
+                con,
+                current_schema,
+                current_table
+              )
+            }, error = function(error){
+              data.frame()
+            })
+            auto_complete_suggestions <- list()
+            auto_complete_suggestions[["Schema"]] <- current_schema
+            auto_complete_suggestions[["Table"]] <- current_table
+            auto_complete_suggestions[["Column"]] <- colnames(current_table_preview)
+
+
+            shinyAce::updateAceEditor(
+              session = session,
+              editorId = "query",
+              autoCompleteList = auto_complete_suggestions
+            )
+          }
+
+        })
+
       }, error = function(error){
         shiny::showNotification(error$message)
       })
@@ -291,15 +328,18 @@ view_database <-
             input$tables
           )
 
-          table_modal_w_download_Server(
+          table_modal_w_download_full_Server(
             id = "preview",
-            result = result
+            con = con,
+            schema = input$schema,
+            table = input$tables,
+            n_rows = n_rows
           )
 
           table_modal_w_download_UI(
             id = "preview",
             title = glue::glue("Preview Table: {input$tables}"),
-            download_title = "Download Preview",
+            download_title = "Download Table",
             n_rows = n_rows,
             result = result
           )
@@ -380,7 +420,7 @@ view_database <-
       # Upload Table -----------------------------------------------------------
 
       # Increase file upload limit
-      options(shiny.maxRequestSize = 2000 * 1024^2)
+      options(shiny.maxRequestSize = max_file_upload_size)
 
       # Upload file to DB
       shiny::observeEvent(input$newTableUpload, {
@@ -440,6 +480,10 @@ view_database <-
           if (input$cleanColumnNames == "Yes") {
             new_table <-
               janitor::clean_names(new_table)
+            if (driver == "Snowflake"){
+              colnames(new_table) <- toupper(colnames(new_table))
+            }
+
           }
 
           tryCatch({
@@ -475,7 +519,7 @@ view_database <-
               session,
               "tables",
               choices = current_tables,
-              selected = current_tables[1],
+              selected = input$newTableName,
               server = TRUE
             )
 
