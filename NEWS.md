@@ -1,3 +1,6 @@
+# octopus 0.4.1
+* Minor bug fixes
+
 # octopus 0.4.0
 * Increased file upload size allowed limit
 * Return number of rows of every query
@@ -12,7 +15,6 @@
 * Table select remembers selected table after query submitted
 
 # octopus 0.2.0
-
 * Added support for Microsoft SQL Server Database
 * Added support for hot key commands to run queries (ctr+shift+enter)
 * Minor bug fixes

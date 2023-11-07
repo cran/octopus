@@ -1,7 +1,7 @@
-9f3cef3b7608ec6c8ddd3693aaea90fe *DESCRIPTION
+5b4e7d68b6a637d68edb9960ed0b44b5 *DESCRIPTION
 3e1863b11eeb4064746c5621d02ee3b5 *LICENSE
 f3813ad5dad0d3570792162816ecc19d *NAMESPACE
-5f139886bb48b261d37870408806719f *NEWS.md
+49db10cd40645b1cd7dd713361836e71 *NEWS.md
 5c59d3a9a03a568524ee43d6894da94c *R/duckdb_connection.R
 815cebfc89e33597fe69a1fc134613d4 *R/get_database_functions.R
 a9615406ff958edb36a67679776b2283 *R/list_drivers.R
@@ -11,7 +11,7 @@ da906db3adb62f15c7387a18394c2ae2 *R/postgres_connection.R
 653283f316b964ddbc0fbf8693745463 *R/snowflake_connection.R
 3f599c544cd113f9096a4df584a7c18d *R/sqlite_connection.R
 9f3c8bfd98964b1d3f9e0281a3455983 *R/submit_query.R
-c3bd0ac13598a5c5e41aa0c49f366a89 *R/table_modal_w_download.R
+1ffc17197f7132a0c577838d37c304df *R/table_modal_w_download.R
 a49d8894e75861df9f6b99a87366910c *R/vertica_connection.R
 fa3293d56f188fc22c6262c9d095fe56 *R/view_database.R
 84dc5d43c41f06d0f38712966578536c *README.md
@@ -32,5 +32,5 @@ f8674af77b52f7bb9bb30784f7c81a23 *tests/testthat/test-postgres_connection.R
 aba724e504ec003d87146be2a73b0119 *tests/testthat/test-submit_query.R
 25379c234f00aa2781dd45991b2db091 *tests/testthat/test-table_modal_w_download.R
 454811f85411f293708b557a0a56fbb7 *tests/testthat/test-vertica_connection.R
-e36c2d2a4353c9aff67440ce0c60f769 *tests/testthat/test-view_database.R
+67ac05de201fa78eec807c3c4f674822 *tests/testthat/test-view_database.R
 27e054ce1ee2fdc93738665235100040 *vignettes/octopus.Rmd
