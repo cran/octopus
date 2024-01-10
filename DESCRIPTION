@@ -1,7 +1,7 @@
 Package: octopus
 Type: Package
 Title: A Database Management Tool
-Version: 0.4.1
+Version: 0.4.2
 Authors@R: person("Marcus", "Codrescu", , "m.codrescu@outlook.com", role = c("aut", "cre"))
 Maintainer: Marcus Codrescu <m.codrescu@outlook.com>
 Description: A database management tool built as a 'shiny' application. Connect to various 
@@ -11,15 +11,15 @@ URL: https://github.com/MCodrescu/octopus,
 BugReports: https://github.com/MCodrescu/octopus/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
-Suggests: duckdb, keyring, knitr, odbc, readr, rmarkdown, RMySQL,
-        RPostgres, RSQLite, testthat (>= 3.0.0)
+Suggests: keyring, knitr, odbc, readr, rmarkdown, RMySQL, RPostgres,
+        RSQLite, testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: bslib, data.table, DBI, dplyr, DT, glue, httr, janitor, rio,
         shiny, shinyAce, shinyjs, utils
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-11-07 15:46:04 UTC; mc678p
+Packaged: 2024-01-09 23:47:09 UTC; mc678p
 Author: Marcus Codrescu [aut, cre]
 Repository: CRAN
-Date/Publication: 2023-11-07 16:00:06 UTC
+Date/Publication: 2024-01-10 00:03:07 UTC

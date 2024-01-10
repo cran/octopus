@@ -1,3 +1,6 @@
+# octopus 0.4.2
+* Minor bug fixes
+
 # octopus 0.4.1
 * Minor bug fixes
 
